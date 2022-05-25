@@ -44,7 +44,7 @@ async function run() {
             res.send(parts)
         });
 
-        // get one inventory item
+        // get one parts item
         app.get('/part/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
@@ -57,15 +57,29 @@ async function run() {
             res.send(users)
         })
 
-        app.put('/user/admin/:email', async (req, res) => {
+        app.get('/admin/:email', async (req, res) => {
             const email = req.params.email;
-            const filter = { email: email };
+            const user = await userCollection.findOne({ email: email });
+            const isAdmin = user.role === 'admin';
+            res.send({ admin: isAdmin })
+        })
 
-            const updateDoc = {
-                $set: { role: 'admin' },
-            };
-            const result = await userCollection.updateOne(filter, updateDoc);
-            res.send(result);
+        app.put('/user/admin/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            const requester = req.decoded.email;
+            const requesterAccount = await userCollection.findOne({ email: requester });
+            if (requesterAccount.role === 'admin') {
+                const filter = { email: email };
+                const updateDoc = {
+                    $set: { role: 'admin' },
+                };
+                const result = await userCollection.updateOne(filter, updateDoc);
+                res.send(result);
+            }
+            else {
+                res.status(403).send({ message: 'forbidden access' })
+            }
+
         })
 
         app.put('/user/:email', async (req, res) => {
@@ -88,7 +102,7 @@ async function run() {
         });
         app.get('/placeorder', verifyJWT, async (req, res) => {
             const customerEmail = req.query.email;
-            console.log(customerEmail);
+            // console.log(customerEmail);
             const decodedEmail = req.decoded.email;
             if (decodedEmail === customerEmail) {
                 const query = { customerEmail: customerEmail };
@@ -99,6 +113,14 @@ async function run() {
                 return res.status(403).send({ message: 'forbidden access' });
             }
 
+        })
+
+        // delete user
+        app.delete('/user/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await userCollection.deleteOne(query);
+            res.send(result);
         })
     }
 
