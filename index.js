@@ -20,6 +20,7 @@ async function run() {
         await client.connect();
         const partsCollection = client.db('computerParts').collection('parts');
         const placeOrderCollection = client.db('computerParts').collection('placeOrder');
+        const userCollection = client.db('computerParts').collection('users');
 
         // get all parts
         app.get('/part', async (req, res) => {
@@ -37,6 +38,19 @@ async function run() {
             res.send(part);
         })
 
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: user,
+            };
+            const result = await userCollection.updateOne(filter, updateDoc, options);
+            // const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+            res.send(result);
+        })
+
         app.post("/placeorder", async (req, res) => {
             const placeOrder = req.body;
             const result = await placeOrderCollection.insertOne(placeOrder);
@@ -44,7 +58,7 @@ async function run() {
         });
         app.get('/placeorder', async (req, res) => {
             const customerEmail = req.query.email;
-            console.log(customerEmail);
+            // console.log(customerEmail);
             const query = { customerEmail: customerEmail };
             const orders = await placeOrderCollection.find(query).toArray();
             res.send(orders);
