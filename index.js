@@ -54,6 +54,7 @@ async function run() {
             res.send(part);
         })
 
+        // get all user
         app.get('/user', verifyJWT, async (req, res) => {
             const users = await userCollection.find().toArray();
             res.send(users)
@@ -116,6 +117,12 @@ async function run() {
             }
 
         })
+        app.get('/placeorder', async (req, res) => {
+            const query = {};
+            const cursor = placeOrderCollection.find(query);
+            const orders = await cursor.toArray();
+            res.send(orders);
+        });
         app.get('/review', async (req, res) => {
             const query = {};
             const reviews = await reviewCollection.find(query).toArray();
@@ -130,6 +137,19 @@ async function run() {
             res.send(result);
         });
 
+        app.post("/part", async (req, res) => {
+            const product = req.body;
+            const result = await partsCollection.insertOne(product);
+            res.send(result);
+        });
+
+        app.get('/placeorder/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const orders = await placeOrderCollection.findOne(query)
+            res.send(orders);
+        })
+
         // delete user
         app.delete('/user/:id', async (req, res) => {
             const id = req.params.id;
@@ -137,6 +157,7 @@ async function run() {
             const result = await userCollection.deleteOne(query);
             res.send(result);
         })
+
     }
 
     finally {
