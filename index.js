@@ -35,6 +35,8 @@ async function run() {
         const partsCollection = client.db('computerParts').collection('parts');
         const placeOrderCollection = client.db('computerParts').collection('placeOrder');
         const userCollection = client.db('computerParts').collection('users');
+        const reviewCollection = client.db('computerParts').collection('reviews');
+
 
         // get all parts
         app.get('/part', async (req, res) => {
@@ -114,6 +116,19 @@ async function run() {
             }
 
         })
+        app.get('/review', async (req, res) => {
+            const query = {};
+            const reviews = await reviewCollection.find(query).toArray();
+            res.send(reviews);
+
+        })
+
+        // add a review | Post review
+        app.post("/review", async (req, res) => {
+            const review = req.body;
+            const result = await reviewCollection.insertOne(review);
+            res.send(result);
+        });
 
         // delete user
         app.delete('/user/:id', async (req, res) => {
