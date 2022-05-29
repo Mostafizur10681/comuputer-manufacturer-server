@@ -40,6 +40,7 @@ async function run() {
         const userCollection = client.db('computerParts').collection('users');
         const reviewCollection = client.db('computerParts').collection('reviews');
         const paymentCollection = client.db('computerParts').collection('payments');
+        const orderCollection = client.db('computerParts').collection('orders');
 
 
         // get all parts
@@ -128,6 +129,12 @@ async function run() {
             const cursor = placeOrderCollection.find(query);
             const orders = await cursor.toArray();
             res.send(orders);
+        });
+        app.get('/orders', async (req, res) => {
+            const query = {}
+            const cursor = placeOrderCollection.find(query);
+            const products = await cursor.toArray();
+            res.send(products)
         });
         // get all review
         app.get('/review', async (req, res) => {
